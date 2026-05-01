@@ -1,0 +1,239 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>[오늘부터 레벨업] : 생명과학1 - 오답 선택</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+            background-color: #f4f7f5;
+            color: #1b4332;
+            margin: 0;
+            padding: 80px 10vw;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        h1 {
+            font-size: 28px;
+            font-weight: 700;
+            letter-spacing: -0.5px;
+            margin: 0 0 24px 0;
+            color: #081c15;
+            text-align: center;
+        }
+
+        #exam-subtitle {
+            font-size: 18px;
+            font-weight: 600;
+            color: #d35400;
+            margin: 0 0 16px 0;
+        }
+
+        p {
+            font-size: 15px;
+            font-weight: 400;
+            color: #555555;
+            margin: 0 0 16px 0;
+        }
+
+        .number-grid {
+            display: grid;
+            grid-template-columns: repeat(5, 1fr);
+            gap: 12px;
+            width: 100%;
+            max-width: 400px;
+            margin-bottom: 40px;
+        }
+
+        .num-btn {
+            aspect-ratio: 1 / 1;
+            background-color: #ffffff;
+            border: 1px solid #b7c4bd;
+            border-radius: 12px;
+            font-size: 22px;
+            font-weight: 600;
+            color: #1b4332;
+            cursor: pointer;
+            transition: all 0.15s ease-in-out;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .num-btn:hover {
+            border-color: #1b4332;
+            transform: scale(1.05);
+        }
+
+        .num-btn.selected {
+            background-color: #1b4332;
+            border-color: #1b4332;
+            color: #ffffff;
+            box-shadow: 0 4px 10px rgba(27, 67, 50, 0.3);
+        }
+
+        /* 하단 버튼 그룹 스타일 */
+        .action-btn-group {
+            display: flex;
+            justify-content: center;
+            gap: 12px;
+            width: 100%;
+            max-width: 400px; 
+        }
+
+        .btn-secondary {
+            background-color: #f1f3f5;
+            color: #495057;
+            border: 1px solid #dee2e6;
+            border-radius: 8px;
+            padding: 16px 20px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: 0.2s;
+            white-space: nowrap;
+        }
+
+        .btn-secondary:hover {
+            background-color: #e2e6ea;
+        }
+
+        .btn-primary {
+            background-color: #081c15;
+            color: #ffffff;
+            border: none;
+            border-radius: 8px;
+            padding: 16px 30px;
+            font-size: 18px;
+            font-weight: 600;
+            cursor: pointer;
+            flex: 1; 
+            transition: all 0.2s ease;
+        }
+
+        .btn-primary:hover {
+            background-color: #1b4332;
+            box-shadow: 0 4px 12px rgba(8, 28, 21, 0.2);
+        }
+
+        /* 🌟 커스텀 모달(팝업) CSS 추가 */
+        .custom-modal-overlay {
+            display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background-color: rgba(0, 0, 0, 0.4); z-index: 1000;
+            justify-content: center; align-items: center;
+        }
+        .custom-modal-box {
+            background-color: white; padding: 30px 40px; border-radius: 12px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.15); text-align: center;
+            max-width: 320px; width: 80%; animation: popIn 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+        .custom-modal-icon { font-size: 32px; margin-bottom: 12px; }
+        .custom-modal-message { font-size: 16px; color: #1b4332; font-weight: 600; margin: 0 0 24px 0; line-height: 1.5; word-break: keep-all; }
+        .custom-modal-btn {
+            background-color: #1b4332; color: white; border: none; padding: 12px 24px; border-radius: 8px;
+            font-size: 16px; font-weight: 700; cursor: pointer; transition: background-color 0.2s; width: 100%;
+        }
+        .custom-modal-btn:hover { background-color: #081c15; }
+        @keyframes popIn { from { opacity: 0; transform: scale(0.9); } to { opacity: 1; transform: scale(1); } }
+    </style>
+</head>
+<body>
+
+    <h1>[오늘부터 레벨업] : 생명과학1</h1>
+    <div id="exam-subtitle">불러오는 중...</div>
+    <p>오답 문항의 번호를 모두 선택하세요.</p>
+
+    <div class="number-grid" id="grid"></div>
+
+    <div class="action-btn-group">
+        <button class="btn-secondary" onclick="location.href='index.html'">처음으로</button>
+        <button class="btn-primary" onclick="goToStep3()">유사 문항 추천받기 →</button>
+    </div>
+
+    <div id="custom-modal" class="custom-modal-overlay">
+        <div class="custom-modal-box">
+            <div class="custom-modal-icon">💡</div>
+            <p id="custom-modal-message" class="custom-modal-message">메시지 내용</p>
+            <button class="custom-modal-btn" onclick="closeCustomAlert()">확인</button>
+        </div>
+    </div>
+
+    <script>
+        // 🌟 커스텀 팝업창을 띄우고 닫는 함수
+        function showCustomAlert(message) {
+            document.getElementById("custom-modal-message").innerHTML = message;
+            document.getElementById("custom-modal").style.display = "flex";
+        }
+
+        function closeCustomAlert() {
+            document.getElementById("custom-modal").style.display = "none";
+        }
+
+        const examName = localStorage.getItem("selectedExam");
+        if(examName) {
+            document.getElementById("exam-subtitle").innerText = examName;
+        } else {
+            document.getElementById("exam-subtitle").innerText = "시험지 미선택";
+        }
+
+        let selectedNumbers = [];
+
+        const grid = document.getElementById("grid");
+        for (let i = 1; i <= 20; i++) {
+            const btn = document.createElement("button");
+            btn.className = "num-btn";
+            btn.innerText = i;
+            
+            btn.onclick = function() {
+                if (selectedNumbers.includes(i)) {
+                    selectedNumbers = selectedNumbers.filter(num => num !== i);
+                    btn.classList.remove("selected");
+                } 
+                else {
+                    selectedNumbers.push(i);
+                    btn.classList.add("selected");
+                }
+            };
+            grid.appendChild(btn);
+        }
+
+        function goToStep3() {
+            if (selectedNumbers.length === 0) {
+                // 🌟 기본 alert 대신 커스텀 팝업 호출 (메시지 변경)
+                showCustomAlert("틀린 문항을 하나 이상 선택해 주세요!");
+                return;
+            }
+            
+            selectedNumbers.sort((a, b) => a - b);
+            localStorage.setItem("selectedErrors", JSON.stringify(selectedNumbers));
+            
+            window.location.href = "step3.html";
+        }
+    </script>
+
+<script>
+    // 🌟 백그라운드에서 학습 기록 미리 가져오기 (step3 딜레이 제거용)
+    window.addEventListener('DOMContentLoaded', () => {
+        const nickname = localStorage.getItem("userNickname");
+        if (nickname) {
+            const GAS_URL = "https://script.google.com/macros/s/AKfycbx5YAUCnK136tvlk35KVIOAw77eIa2IZ6NsJ4wy-n6HfhY3tkt3VBx6pye2coCOJuq55g/exec";
+            fetch(`${GAS_URL}?nickname=${encodeURIComponent(nickname)}`)
+                .then(res => res.json())
+                .then(data => {
+                    if(data.success && data.data) {
+                        // 가져온 데이터를 브라우저 임시 저장소에 몰래 저장
+                        localStorage.setItem("cachedHistory", JSON.stringify(data.data));
+                    }
+                })
+                .catch(err => console.log("미리 가져오기 대기 중..."));
+        } else {
+            localStorage.removeItem("cachedHistory");
+        }
+    });
+</script>
+
+</body>
+</html>

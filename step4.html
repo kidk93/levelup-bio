@@ -1,0 +1,278 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>[오늘부터 레벨업] : 생명과학1 오답노트</title>
+    
+    <script src="db/database.js"></script>
+
+    <style>
+        /* =========================================
+           1. 웹 화면 기본 디자인 (수정 절대 안함)
+           ========================================= */
+        body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif; background-color: #f4f7f5; color: #1b4332; margin: 0; padding: 40px 10vw; display: flex; flex-direction: column; align-items: center; }
+        .web-main-title { font-size: 28px; font-weight: 800; letter-spacing: -1px; margin: 0 0 30px 0; color: #081c15; border-bottom: 3px solid #1b4332; padding-bottom: 16px; text-align: center; width: 100%; max-width: 900px; }
+        
+        #worksheet-container { width: 100%; max-width: 900px; display: flex; flex-direction: column; gap: 40px; margin-bottom: 20px; }
+        .a4-page { width: 100%; display: flex; flex-direction: column; }
+        .a4-grid { width: 100%; display: flex; flex-direction: column; gap: 40px; }
+        
+        .print-only-title { display: none; }
+        .question-page { background-color: #ffffff; border: 1px solid #b7c4bd; border-radius: 12px; padding: 30px; box-shadow: 0 2px 8px rgba(0,0,0,0.03); display: flex; flex-direction: column; }
+        .q-header { margin-bottom: 16px; display: flex; align-items: center; gap: 8px; }
+        .tag-original { background-color: #d35400; color: white; padding: 4px 8px; border-radius: 4px; font-size: 12px; font-weight: 600; white-space: nowrap; }
+        .tag-similar { background-color: #1b4332; color: white; padding: 4px 8px; border-radius: 4px; font-size: 12px; font-weight: 600; white-space: nowrap; }
+        .q-info { font-size: 14px; font-weight: 700; color: #1b4332; line-height: 1.4; }
+        
+        .q-image-placeholder { 
+            width: 100%; height: auto; 
+            border: 1px solid #e0e0e0; 
+            border-radius: 8px; margin-bottom: 20px; 
+            overflow: hidden; background-color: #ffffff;
+            padding: 8px; 
+            box-sizing: border-box; 
+        }
+        .real-q-image { width: 100%; height: auto; display: block; }
+
+        .answer-section { display: flex; align-items: center; gap: 15px; }
+        .answer-btn { background-color: #f1f3f5; color: #495057; border: 1px solid #dee2e6; border-radius: 6px; padding: 8px 16px; font-size: 14px; font-weight: 600; cursor: pointer; }
+        .answer-text { font-size: 16px; font-weight: 400; color: #d35400; display: none; }
+        
+        .print-area { display: flex; flex-direction: column; align-items: center; gap: 12px; width: 100%; max-width: 600px; margin-top: 20px; }
+        .action-btn-group { display: flex; justify-content: center; gap: 12px; width: 100%; }
+        .btn-secondary { background-color: #f1f3f5; color: #495057; border: 1px solid #dee2e6; border-radius: 8px; padding: 16px 20px; font-size: 16px; font-weight: 600; cursor: pointer; transition: 0.2s; }
+        .btn-secondary:hover { background-color: #e2e6ea; }
+        .btn-primary { background-color: #081c15; color: #ffffff; border: none; border-radius: 8px; padding: 16px 30px; font-size: 16px; font-weight: 600; cursor: pointer; flex: 1; }
+        .print-guide-text { font-size: 13px; color: #888; text-align: center; margin-top: 5px; line-height: 1.5; }
+        .empty-state { text-align: center; font-size: 16px; color: #1b4332; padding: 60px 20px; font-weight: 600; }
+
+        .spacer { display: none; }
+
+        /* =========================================
+           2. PDF 인쇄 화면 (여백 최적화 및 구분선 밀착)
+           ========================================= */
+        @media print {
+            @page { 
+                size: A4; 
+                margin: 0 !important; 
+            }
+            
+            body { 
+                background-color: #ffffff; 
+                margin: 0 !important; 
+                padding: 0 !important; 
+                -webkit-print-color-adjust: exact; 
+                print-color-adjust: exact; 
+            }
+            
+            .no-print, .web-main-title, .print-area { display: none !important; }
+            
+            #worksheet-container {
+                display: block !important;
+                width: 100% !important;
+                margin: 0 !important;
+                padding: 0 !important;
+            }
+
+            .a4-page {
+                width: 210mm !important;
+                height: 297mm !important;
+                padding: 20mm 15mm 15mm 15mm !important; 
+                box-sizing: border-box !important;
+                page-break-after: always !important;
+                break-after: page !important;
+                display: flex !important;
+                flex-direction: column !important;
+                background-color: #ffffff !important;
+            }
+            
+            .print-only-title { 
+                display: block !important; 
+                font-size: 16pt; font-weight: 800; color: #000; 
+                border-bottom: 2px solid #000; 
+                padding-bottom: 8px; 
+                /* 🌟 마진을 0으로 만들어 중앙 분리선이 제목 선과 닿게 함 */
+                margin-bottom: 0 !important;
+                text-align: left;
+            }
+
+            .a4-grid {
+                display: grid !important;
+                grid-template-columns: 1fr 1fr !important;
+                gap: 16mm !important; 
+                width: 100% !important;
+                flex: 1 !important;
+                position: relative !important; 
+                /* 🌟 제목선과 문항 사이 여백을 기존 8mm의 절반인 4mm로 축소 */
+                padding-top: 4mm !important; 
+            }
+
+            .a4-grid::after {
+                content: "" !important;
+                position: absolute !important;
+                /* 🌟 top:0으로 설정되어 a4-grid 맨 위(제목 구분선)부터 시작됨 */
+                top: 0 !important;
+                bottom: 0 !important;
+                left: 50% !important;
+                width: 0.5pt !important; 
+                background-color: #cccccc !important; 
+                transform: translateX(-50%) !important;
+            }
+
+            .question-page { 
+                border: none !important; 
+                box-shadow: none !important; 
+                margin: 0 !important; 
+                padding: 0 !important; 
+                width: 100% !important;
+                height: 100% !important; 
+                display: flex !important; 
+                flex-direction: column !important;
+            }
+
+            .spacer { display: flex !important; }
+
+            .q-image-placeholder { 
+                border: 1px solid #dddddd !important; 
+                padding: 8px !important; 
+                border-radius: 4px !important;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <h1 class="web-main-title">[오늘부터 레벨업] : 생명과학1 오답노트</h1>
+    
+    <div id="worksheet-container"></div>
+
+    <div class="print-area no-print">
+        <div class="action-btn-group">
+            <button class="btn-secondary" onclick="location.href='index.html'">처음으로</button>
+            <button class="btn-secondary" onclick="location.href='step3.html'">이전으로</button>
+            <button class="btn-primary" onclick="window.print()">PDF 저장 및 인쇄하기</button>
+        </div>
+        <div class="print-guide-text">인쇄 설정에서 <b>'배경 그래픽'을 체크</b>하고 인쇄 또는 저장하세요.</div>
+    </div>
+
+    <script>
+        function formatExamInfo(rawName) {
+            const match = rawName.match(/(\d{4}).*?(\d{1,2})월/);
+            if (!match) return { ui: rawName, folder: rawName.replace(/ /g, "_") };
+            const year = match[1];
+            const month = parseInt(match[2]);
+            const monthStr = month < 10 ? '0' + month : '' + month;
+            const org = [6, 9, 11].includes(month) ? "평가원" : "교육청";
+            return { ui: `${year}년 ${month}월 ${org}`, folder: `${year}년_${monthStr}월_${org}` };
+        }
+
+        function loadWorksheet() {
+            const rawExamName = localStorage.getItem("selectedExam") || "";
+            const examDetails = formatExamInfo(rawExamName);
+            const selectedErrorsRaw = localStorage.getItem("selectedErrors");
+            const finalSelectionsRaw = localStorage.getItem("finalSelections");
+            const container = document.getElementById("worksheet-container");
+
+            if (!selectedErrorsRaw || !finalSelectionsRaw || JSON.parse(finalSelectionsRaw).length === 0) {
+                container.innerHTML = "<div class='empty-state'>선택된 문제가 없습니다. 이전 단계에서 문제를 선택해 주세요.</div>";
+                return;
+            }
+
+            const selectedErrors = JSON.parse(selectedErrorsRaw);
+            const finalSelections = JSON.parse(finalSelectionsRaw);
+            container.innerHTML = ""; 
+
+            const currentExamData = examDB[examDetails.folder] || examDB[examDetails.ui] || {};
+
+            let itemsInCurrentPage = 0;
+            let currentGrid = null;
+
+            function getOrCreateGrid() {
+                if (itemsInCurrentPage === 0 || itemsInCurrentPage >= 2) {
+                    const page = document.createElement('div');
+                    page.className = 'a4-page';
+                    
+                    const title = document.createElement('div');
+                    title.className = 'print-only-title';
+                    title.innerText = '[오늘부터 레벨업] : 생명과학1 오답노트';
+                    page.appendChild(title);
+                    
+                    currentGrid = document.createElement('div');
+                    currentGrid.className = 'a4-grid';
+                    page.appendChild(currentGrid);
+                    
+                    container.appendChild(page);
+                    itemsInCurrentPage = 0;
+                }
+                return currentGrid;
+            }
+
+            selectedErrors.forEach(errorNum => {
+                const paddedNum = String(errorNum).padStart(2, '0');
+                let data = currentExamData[errorNum];
+                if (!data) data = { original: { ans: "미정" }, similars: [] };
+
+                if (itemsInCurrentPage === 1) {
+                    const spacer = document.createElement("div");
+                    spacer.className = "question-page spacer";
+                    getOrCreateGrid().appendChild(spacer);
+                    itemsInCurrentPage++;
+                }
+
+                const origPath = `images_raw/${examDetails.folder}/${paddedNum}.webp`;
+                const origInfo = `${examDetails.ui} - ${errorNum}번`;
+                const origAns = data.original.ans || "미정";
+                
+                getOrCreateGrid().appendChild(createQuestionPage("original", origInfo, origAns, origPath));
+                itemsInCurrentPage++;
+
+                if (data.similars) {
+                    data.similars.forEach(sim => {
+                        if (finalSelections.includes(sim.id)) {
+                            const simDetails = formatExamInfo(sim.simExamName);
+                            const simPath = `images_raw/${simDetails.folder}/${sim.imgFile}`;
+                            const simInfo = `${simDetails.ui} - ${parseInt(sim.imgFile)}번`;
+                            const simAns = sim.ans || "미정";
+                            
+                            getOrCreateGrid().appendChild(createQuestionPage("similar", simInfo, simAns, simPath));
+                            itemsInCurrentPage++;
+                        }
+                    });
+                }
+            });
+        }
+
+        function createQuestionPage(type, info, ansText, imagePath) {
+            const pageDiv = document.createElement("div");
+            pageDiv.className = "question-page";
+            const tagClass = (type === "original") ? "tag-original" : "tag-similar";
+            const tagText = (type === "original") ? "오답 문항" : "추천 유사 문항";
+
+            pageDiv.innerHTML = `
+                <div class="q-header">
+                    <span class="${tagClass}">${tagText}</span>
+                    <span class="q-info">${info}</span>
+                </div>
+                <div class="q-image-placeholder">
+                    <img src="${imagePath}" class="real-q-image" onerror="this.onerror=null; this.src=''; this.alt='[이미지 없음]'; this.style.padding='40px';">
+                </div>
+                <div class="answer-section no-print">
+                    <button class="answer-btn" onclick="toggleAnswer(this)">정답 확인</button>
+                    <span class="answer-text">정답: ${ansText}</span>
+                </div>
+            `;
+            return pageDiv;
+        }
+
+        function toggleAnswer(btn) {
+            const answerText = btn.nextElementSibling;
+            const isVisible = answerText.style.display === "inline-block";
+            answerText.style.display = isVisible ? "none" : "inline-block";
+            btn.innerText = isVisible ? "정답 숨기기" : "정답 확인";
+        }
+
+        window.onload = loadWorksheet;
+    </script>
+</body>
+</html>

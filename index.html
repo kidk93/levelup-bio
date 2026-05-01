@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>[오늘부터 레벨업] : 생명과학1</title>
+    <style>
+        body { 
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif; 
+            background-color: #f4f7f5; 
+            color: #1b4332; 
+            margin: 0; 
+            padding: 80px 10vw; 
+            display: flex; 
+            flex-direction: column; 
+            align-items: center; 
+        }
+        
+        h1 { 
+            font-size: 28px; 
+            font-weight: 700; 
+            letter-spacing: -0.5px; 
+            margin: 0 0 24px 0; 
+            color: #081c15; 
+            text-align: center; 
+            word-break: keep-all; 
+        }
+
+        /* 🌟 gap: 15px를 삭제하여 여백을 수동으로 완벽히 통제합니다 */
+        .login-box { 
+            background: white; padding: 30px; border-radius: 15px; border: 1px solid #b7c4bd;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.05); width: 100%; max-width: 400px; 
+            display: flex; flex-direction: column; margin-bottom: 24px;
+        }
+
+        /* 🌟 제목, 서브타이틀, 입력창, 버튼 사이의 간격을 개별적으로 세밀하게 조정 */
+        .login-title { text-align: center; font-weight: 600; font-size: 17px; margin-bottom: 2px; } /* 바짝 붙임 */
+        .login-subtitle { text-align: center; font-weight: 400; font-size: 13px; color: #888; margin-bottom: 12px; } /* 입력창과 간격 50% 축소 */
+
+        .login-box input { padding: 12px; border-radius: 8px; border: 1px solid #ddd; font-size: 16px; outline: none; margin-bottom: 16px; } /* 버튼과의 간격 유지 */
+        .login-box input::placeholder { color: #ccc; opacity: 1; } 
+
+        .login-box button { background-color: #1b4332; color: white; border: none; padding: 12px; border-radius: 8px; font-size: 16px; font-weight: 700; cursor: pointer; }
+
+        .user-info { text-align: center; margin-bottom: 24px; }
+        .user-greeting { font-size: 16px; font-weight: 600; color: #1b4332; display: block; margin-bottom: 4px; }
+        .btn-logout { font-size: 12px; color: #888; text-decoration: none; cursor: pointer; }
+        .btn-logout:hover { text-decoration: underline; }
+
+        .exam-grid { 
+            display: none; 
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); 
+            gap: 10px; 
+            width: 100%; 
+            max-width: 1000px; 
+        }
+
+        .exam-btn { 
+            background-color: #ffffff; 
+            color: #1b4332; 
+            border: 1px solid #b7c4bd; 
+            border-radius: 10px; 
+            padding: 16px 20px; 
+            font-size: 16px; 
+            font-weight: 700; 
+            cursor: pointer; 
+            transition: all 0.2s ease-in-out; 
+            text-align: center; 
+            box-shadow: 0 4px 6px rgba(0,0,0,0.02); 
+        }
+        .exam-btn:hover { 
+            background-color: #1b4332; 
+            color: #ffffff; 
+            border-color: #1b4332; 
+            transform: translateY(-2px); 
+            box-shadow: 0 4px 8px rgba(27, 67, 50, 0.1); 
+        }
+
+        @media (max-width: 480px) { h1 { font-size: 24px; } body { padding: 40px 5vw; } }
+    </style>
+</head>
+<body>
+
+    <h1>[오늘부터 레벨업] : 생명과학1</h1>
+    
+    <div id="login-section" class="login-box">
+        <div class="login-title">학습 내용을 기록할 닉네임을 입력하세요!</div>
+        <div class="login-subtitle">닉네임 없이도 사용 가능</div>
+        
+        <input type="text" id="nickname-input" placeholder="닉네임을 잘 기억해 두세요." onkeypress="if(event.keyCode==13) login()">
+        <button onclick="login()">입장하기</button>
+    </div>
+
+    <div id="user-display" style="display:none;" class="user-info"></div>
+
+    <div id="exam-list" class="exam-grid"></div>
+
+    <script>
+        const examList = [
+            "2026년 03월 교육청", "2025년 11월 평가원", "2025년 10월 교육청", "2025년 09월 평가원",
+            "2025년 07월 교육청", "2025년 06월 평가원", "2025년 05월 교육청", "2025년 03월 교육청"
+        ];
+
+        window.onload = function() {
+            const savedNickname = localStorage.getItem("userNickname");
+            if (savedNickname !== null) {
+                showExamList(savedNickname);
+            }
+        };
+
+        function login() {
+            const input = document.getElementById("nickname-input");
+            const nick = input.value.trim();
+            localStorage.setItem("userNickname", nick);
+            showExamList(nick);
+        }
+
+        function logout() {
+            localStorage.removeItem("userNickname");
+            location.reload();
+        }
+
+        function showExamList(nick) {
+            document.getElementById("login-section").style.display = "none";
+            const userDisplay = document.getElementById("user-display");
+            userDisplay.style.display = "block";
+
+            if (nick) {
+                userDisplay.innerHTML = `
+                    <span class="user-greeting">${nick} 학생! 학습할 모의고사를 선택하세요.</span>
+                    <span class="btn-logout" onclick="logout()">[닉네임 변경]</span>
+                `;
+            } else {
+                userDisplay.innerHTML = `
+                    <span class="user-greeting">학습할 모의고사를 선택하세요.</span>
+                    <span class="btn-logout" onclick="logout()">[닉네임 설정하기]</span>
+                `;
+            }
+
+            const container = document.getElementById("exam-list");
+            container.style.display = "grid";
+            container.innerHTML = "";
+
+            examList.forEach(examName => {
+                const btn = document.createElement("button");
+                btn.className = "exam-btn";
+                btn.innerText = examName;
+                btn.onclick = () => {
+                    localStorage.setItem("selectedExam", examName);
+                    location.href = "step2.html"; 
+                };
+                container.appendChild(btn);
+            });
+        }
+    </script>
+</body>
+</html>
