@@ -59,13 +59,12 @@
 
         .web-hide { display: table-row; }
 
-        /* 웹 화면에서는 정답표 페이지가 절대 보이지 않게 숨김 처리 */
         @media screen {
             .print-only-answer-page { display: none !important; }
         }
 
         /* =========================================
-           2. PDF 인쇄 화면 (마지노선 175mm 적용)
+           2. PDF 인쇄 화면 
            ========================================= */
         @media print {
             @page { size: A4; margin: 0 !important; }
@@ -85,14 +84,14 @@
             
             #worksheet-container { display: block !important; width: 100% !important; margin: 0 !important; padding: 0 !important; }
 
-            /* 🌟 [최종 크기] 98% 힌트를 역산한 절대 안전폭 175mm x 245mm. (100% 배율에서 빈페이지 절대 불가) */
+            /* 🌟 [기본 모드: 맥북 크롬] 가장 완벽했던 100% 꽉 찬 A4 크기 (축소 버그 해결!) */
             .a4-page {
                 display: flex !important; 
                 flex-direction: column !important; 
-                width: 175mm !important; 
-                height: 245mm !important; 
+                width: 210mm !important; 
+                height: 296mm !important; 
                 margin: 0 auto !important; 
-                padding: 5mm !important; 
+                padding: 20mm 15mm 15mm 15mm !important; 
                 box-sizing: border-box !important; 
                 page-break-inside: avoid !important; 
                 page-break-after: always !important; 
@@ -112,7 +111,7 @@
             }
 
             .a4-grid {
-                display: grid !important; grid-template-columns: 1fr 1fr !important; gap: 8mm !important; 
+                display: grid !important; grid-template-columns: 1fr 1fr !important; gap: 16mm !important; 
                 width: 100% !important; flex: 1 !important; position: relative !important; padding-top: 4mm !important; 
             }
 
@@ -123,16 +122,16 @@
 
             .question-page { border: none !important; box-shadow: none !important; margin: 0 !important; padding: 0 !important; width: 100% !important; height: 100% !important; display: flex !important; flex-direction: column !important; }
             .spacer { display: flex !important; }
-            .q-image-placeholder { border: 1px solid #dddddd !important; padding: 6px !important; border-radius: 4px !important; max-height: 145mm !important; overflow: hidden !important; }
+            .q-image-placeholder { border: 1px solid #dddddd !important; padding: 8px !important; border-radius: 4px !important; max-height: 175mm !important; overflow: hidden !important; }
             .real-q-image { max-height: 100% !important; object-fit: contain !important; }
 
-            /* 🌟 정답표 페이지 175mm 적용 */
+            /* 🌟 정답표 페이지 기본 모드 (맥북 100%) */
             .print-only-answer-page { 
                 display: block !important; 
-                width: 175mm !important;
+                width: 210mm !important;
                 margin: 0 auto !important; 
                 height: auto !important; 
-                padding: 0mm 5mm 0mm 5mm !important; 
+                padding: 0mm 15mm 0mm 15mm !important; 
                 box-sizing: border-box !important;
                 overflow: visible !important; 
                 page-break-inside: auto !important; 
@@ -146,12 +145,10 @@
             }
 
             .print-only-answer-page tbody { display: table-row-group !important; }
-            
-            /* 맥북 타이틀 반복 보장 */
             .print-only-answer-page thead { display: table-header-group !important; }
             
             .print-only-ans-title-cell {
-                padding: 10mm 0mm 8px 0mm !important; 
+                padding: 20mm 0mm 8px 0mm !important; 
                 border: none !important; text-align: left !important; background-color: #ffffff !important;
             }
             .print-only-ans-title-cell .title-text {
@@ -162,26 +159,47 @@
 
             .print-only-answer-page tfoot { display: table-footer-group !important; }
             .print-only-ans-footer-cell {
-                padding: 0 !important; border: none !important; height: 10mm !important; background-color: transparent !important;
+                padding: 0 !important; border: none !important; height: 15mm !important; background-color: transparent !important;
             }
 
-            /* 🌟 [아이패드 전용 최후의 방어선] 물리적으로 표가 찢어지는 것을 불가능하게 만듦 */
             .ans-table tr, .ans-table td, .ans-table th { 
                 page-break-inside: avoid !important; 
                 break-inside: avoid !important; 
-                -webkit-column-break-inside: avoid !important;
             }
-            .detail-box {
-                /* 아이패드가 글자를 자르지 못하도록 강제로 한 덩어리로 인식시킴 */
-                display: inline-block !important; 
-                width: 100% !important;
-                page-break-inside: avoid !important;
-                break-inside: avoid !important;
-                -webkit-column-break-inside: avoid !important;
-            }
-            .ans-table td {
-                /* 셀 내용이 찢어지는 현상을 방어하기 위한 상대위치 부여 */
-                position: relative !important;
+
+            /* =========================================
+               🌟 [해킹 모드: 아이패드/아이폰 전용] 빈 페이지 완벽 차단
+               ========================================= */
+            @supports (-webkit-touch-callout: none) {
+                .a4-page {
+                    width: 175mm !important; 
+                    height: 245mm !important; 
+                    padding: 5mm !important; 
+                }
+                .a4-grid {
+                    gap: 8mm !important;
+                }
+                .q-image-placeholder {
+                    max-height: 145mm !important;
+                }
+                .print-only-answer-page {
+                    width: 175mm !important;
+                    padding: 0mm 5mm 0mm 5mm !important; 
+                }
+                .print-only-ans-title-cell {
+                    padding: 10mm 0mm 8px 0mm !important; 
+                }
+                .print-only-ans-footer-cell {
+                    height: 10mm !important; 
+                }
+                .ans-table tr, .ans-table td, .ans-table th { 
+                    -webkit-column-break-inside: avoid !important;
+                }
+                .detail-box, .ans-highlight {
+                    display: inline-block !important; 
+                    width: 100% !important;
+                    -webkit-column-break-inside: avoid !important;
+                }
             }
         }
     </style>
@@ -253,7 +271,7 @@
                     
                     const title = document.createElement('div');
                     title.className = 'print-only-title';
-                    title.innerText = '[오늘부터 레벨업] : 생명과학1 맞춤형 오답 클리닉';
+                    title.innerText = '[오늘부터 레벨업] : 생명과학1 오답노트';
                     page.appendChild(title);
                     
                     currentGrid = document.createElement('div');
@@ -329,7 +347,7 @@
                 const tableWrapper = document.createElement('div');
                 tableWrapper.style.width = '100%';
                 
-                /* 🌟 맥북에서 완벽하게 작동하는 thead/tfoot 구조 유지 */
+                /* 🌟 [수정 완료] 문항 정보/정답을 줄이고(13%, 6%) 해설을 대폭(74%) 늘렸습니다! */
                 tableWrapper.innerHTML = `
                     <table class="ans-table">
                         <thead>
@@ -339,10 +357,10 @@
                                 </th>
                             </tr>
                             <tr>
-                                <th style="width: 8%;">구분</th>
-                                <th style="width: 22%;">문항 정보</th>
-                                <th style="width: 10%;">정답</th>
-                                <th style="width: 60%;">문항 분석 및 해설</th>
+                                <th style="width: 7%;">구분</th>
+                                <th style="width: 13%;">문항 정보</th>
+                                <th style="width: 6%;">정답</th>
+                                <th style="width: 74%;">문항 분석 및 해설</th>
                             </tr>
                         </thead>
                         <tbody>
