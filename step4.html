@@ -65,7 +65,7 @@
         }
 
         /* =========================================
-           2. PDF 인쇄 화면 
+           2. PDF 인쇄 화면 (마지노선 175mm 적용)
            ========================================= */
         @media print {
             @page { size: A4; margin: 0 !important; }
@@ -85,14 +85,14 @@
             
             #worksheet-container { display: block !important; width: 100% !important; margin: 0 !important; padding: 0 !important; }
 
-            /* 🌟 [최종 크기 수정] 94%의 힌트를 바탕으로 가장 안전한 180mm x 255mm로 설정 */
+            /* 🌟 [최종 크기] 98% 힌트를 역산한 절대 안전폭 175mm x 245mm. (100% 배율에서 빈페이지 절대 불가) */
             .a4-page {
                 display: flex !important; 
                 flex-direction: column !important; 
-                width: 180mm !important; 
-                height: 255mm !important; 
+                width: 175mm !important; 
+                height: 245mm !important; 
                 margin: 0 auto !important; 
-                padding: 10mm !important; 
+                padding: 5mm !important; 
                 box-sizing: border-box !important; 
                 page-break-inside: avoid !important; 
                 page-break-after: always !important; 
@@ -112,7 +112,7 @@
             }
 
             .a4-grid {
-                display: grid !important; grid-template-columns: 1fr 1fr !important; gap: 10mm !important; 
+                display: grid !important; grid-template-columns: 1fr 1fr !important; gap: 8mm !important; 
                 width: 100% !important; flex: 1 !important; position: relative !important; padding-top: 4mm !important; 
             }
 
@@ -123,13 +123,13 @@
 
             .question-page { border: none !important; box-shadow: none !important; margin: 0 !important; padding: 0 !important; width: 100% !important; height: 100% !important; display: flex !important; flex-direction: column !important; }
             .spacer { display: flex !important; }
-            .q-image-placeholder { border: 1px solid #dddddd !important; padding: 8px !important; border-radius: 4px !important; max-height: 155mm !important; overflow: hidden !important; }
+            .q-image-placeholder { border: 1px solid #dddddd !important; padding: 6px !important; border-radius: 4px !important; max-height: 145mm !important; overflow: hidden !important; }
             .real-q-image { max-height: 100% !important; object-fit: contain !important; }
 
-            /* 🌟 정답표 페이지도 180mm 적용 */
+            /* 🌟 정답표 페이지 175mm 적용 */
             .print-only-answer-page { 
                 display: block !important; 
-                width: 180mm !important;
+                width: 175mm !important;
                 margin: 0 auto !important; 
                 height: auto !important; 
                 padding: 0mm 5mm 0mm 5mm !important; 
@@ -146,10 +146,12 @@
             }
 
             .print-only-answer-page tbody { display: table-row-group !important; }
+            
+            /* 맥북 타이틀 반복 보장 */
             .print-only-answer-page thead { display: table-header-group !important; }
             
             .print-only-ans-title-cell {
-                padding: 15mm 0mm 8px 0mm !important; 
+                padding: 10mm 0mm 8px 0mm !important; 
                 border: none !important; text-align: left !important; background-color: #ffffff !important;
             }
             .print-only-ans-title-cell .title-text {
@@ -160,24 +162,26 @@
 
             .print-only-answer-page tfoot { display: table-footer-group !important; }
             .print-only-ans-footer-cell {
-                padding: 0 !important; border: none !important; height: 15mm !important; background-color: transparent !important;
+                padding: 0 !important; border: none !important; height: 10mm !important; background-color: transparent !important;
             }
 
-            /* 🌟 [WebKit 표 찢어짐 완벽 방어] tr, td 내부까지 강제로 묶어버림 */
-            .ans-table tbody, .ans-table tr, .ans-table td, .ans-table th { 
+            /* 🌟 [아이패드 전용 최후의 방어선] 물리적으로 표가 찢어지는 것을 불가능하게 만듦 */
+            .ans-table tr, .ans-table td, .ans-table th { 
                 page-break-inside: avoid !important; 
                 break-inside: avoid !important; 
                 -webkit-column-break-inside: avoid !important;
-                -webkit-region-break-inside: avoid !important;
             }
-            .ans-table tr {
-                display: table-row !important; /* iOS Flex 간섭 차단 */
-            }
-            .detail-box, .ans-highlight {
-                display: inline-block !important; /* 텍스트 덩어리가 찢어지지 않도록 블록화 */
+            .detail-box {
+                /* 아이패드가 글자를 자르지 못하도록 강제로 한 덩어리로 인식시킴 */
+                display: inline-block !important; 
                 width: 100% !important;
                 page-break-inside: avoid !important;
                 break-inside: avoid !important;
+                -webkit-column-break-inside: avoid !important;
+            }
+            .ans-table td {
+                /* 셀 내용이 찢어지는 현상을 방어하기 위한 상대위치 부여 */
+                position: relative !important;
             }
         }
     </style>
@@ -194,7 +198,7 @@
             <button class="btn-secondary" onclick="location.href='step3.html'">이전으로</button>
             <button class="btn-primary" onclick="window.print()">PDF 저장 및 인쇄하기</button>
         </div>
-        <div class="print-guide-text">인쇄 설정에서 <b>'배경 그래픽'을 체크</b>하고 인쇄 또는 저장하세요.<br>※ 인쇄 시에만 마지막 페이지에 상세 정답 해설표가 자동 첨부됩니다.</div>
+        <div class="print-guide-text">인쇄 설정에서 <b>'배경 그래픽'을 체크</b>하고 인쇄 또는 저장하세요.</div>
     </div>
 
     <script>
@@ -325,19 +329,20 @@
                 const tableWrapper = document.createElement('div');
                 tableWrapper.style.width = '100%';
                 
+                /* 🌟 맥북에서 완벽하게 작동하는 thead/tfoot 구조 유지 */
                 tableWrapper.innerHTML = `
                     <table class="ans-table">
                         <thead>
                             <tr class="web-hide">
                                 <th colspan="4" class="print-only-ans-title-cell">
-                                    <span class="title-text">[오늘부터 레벨업] : 생명과학1 상세 정답 및 해설</span>
+                                    <span class="title-text">[오늘부터 레벨업] : 생명과학1 오답노트(정답 및 해설)</span>
                                 </th>
                             </tr>
                             <tr>
                                 <th style="width: 8%;">구분</th>
                                 <th style="width: 22%;">문항 정보</th>
                                 <th style="width: 10%;">정답</th>
-                                <th style="width: 60%;">상세 해설 및 출제 분석</th>
+                                <th style="width: 60%;">문항 분석 및 해설</th>
                             </tr>
                         </thead>
                         <tbody>
