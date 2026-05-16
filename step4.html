@@ -65,7 +65,7 @@
         }
 
         /* =========================================
-           2. PDF 인쇄 화면 
+           2. PDF 인쇄 화면 (A4 전용 고정 설정)
            ========================================= */
         @media print {
             @page { size: A4; margin: 0 !important; }
@@ -75,13 +75,12 @@
             
             #worksheet-container { display: block !important; width: 100% !important; margin: 0 !important; padding: 0 !important; }
 
+            /* 🌟 [수정] 문제 페이지: A4 정규 세로 규격(297mm) 하드 고정 및 미세 오차 넘침 차단 */
             .a4-page {
-                width: 100% !important; /* 🌟 아이패드의 가로 여백 초과를 막기 위해 유연한 100%로 변경 */
-                max-width: 210mm !important;
-                height: 280mm !important; /* 🌟 아이패드 세로 하드웨어 여백을 피하기 위해 296mm -> 280mm로 안전하게 축소 (빈 페이지 방지) */
+                width: 210mm !important; 
+                height: 297mm !important; 
                 padding: 20mm 15mm 15mm 15mm !important; 
                 box-sizing: border-box !important; 
-                page-break-inside: avoid !important; 
                 page-break-after: always !important; 
                 break-after: page !important;
                 display: flex !important; 
@@ -98,6 +97,7 @@
             .a4-grid {
                 display: grid !important; grid-template-columns: 1fr 1fr !important; gap: 16mm !important; 
                 width: 100% !important; flex: 1 !important; position: relative !important; padding-top: 4mm !important; 
+                box-sizing: border-box !important;
             }
 
             .a4-grid::after {
@@ -107,15 +107,20 @@
 
             .question-page { border: none !important; box-shadow: none !important; margin: 0 !important; padding: 0 !important; width: 100% !important; height: 100% !important; display: flex !important; flex-direction: column !important; }
             .spacer { display: flex !important; }
-            .q-image-placeholder { border: 1px solid #dddddd !important; padding: 8px !important; border-radius: 4px !important; }
+            
+            /* 🌟 [수정] 인쇄 시 과도하게 큰 이미지가 페이지 레이아웃을 깨뜨리지 않도록 최대 높이 제한 제한 */
+            .q-image-placeholder { 
+                border: 1px solid #dddddd !important; padding: 8px !important; border-radius: 4px !important; 
+                max-height: 175mm !important; overflow: hidden !important;
+            }
+            .real-q-image { max-height: 100% !important; object-fit: contain !important; }
 
-            /* 🌟 정답표 인쇄용 레이아웃 */
+            /* 🌟 [수정] 정답표 페이지: 해설 양에 따라 다음 A4 장들로 유연하게 늘어나도록 auto 처리 */
             .print-only-answer-page { 
                 display: block !important; 
-                width: 100% !important; /* 아이패드 가로 여백 초과 방지 */
-                max-width: 210mm !important;
+                width: 210mm !important; 
                 height: auto !important; 
-                padding: 0mm 15mm 0mm 15mm !important; 
+                padding: 20mm 15mm 20mm 15mm !important; 
                 box-sizing: border-box !important;
                 overflow: visible !important; 
                 page-break-inside: auto !important; 
@@ -124,47 +129,32 @@
             }
 
             .print-only-answer-page .ans-table {
-                display: table !important; /* 🌟 아이패드 엔진이 타이틀 반복을 확실히 인식하도록 명시 */
+                display: table !important; 
                 margin-top: 0 !important; 
                 width: 100% !important;
+                border-collapse: collapse !important;
             }
 
             .print-only-answer-page tbody {
-                display: table-row-group !important; /* 🌟 아이패드 버그 방지용 구조 명시 */
+                display: table-row-group !important; 
             }
 
-            /* 상단 여백 및 타이틀 반복 처리 */
+            /* 🌟 [수정] 아이패드 WebKit 타이틀 무한 반복 보장 구조 선언 */
             .print-only-answer-page thead { display: table-header-group !important; }
             .print-only-ans-title-cell {
-                padding: 20mm 0mm 8px 0mm !important; 
+                padding: 0mm 0mm 8px 0mm !important; 
                 border: none !important; text-align: left !important; background-color: #ffffff !important;
             }
             .print-only-ans-title-cell .title-text {
                 display: block !important; font-size: 16pt !important; font-weight: 800 !important;
                 color: #000 !important; border-bottom: 2px solid #000 !important; padding-bottom: 8px !important;
+                margin-bottom: 10px !important;
             }
 
-            /* 하단 여백 반복 처리 (tfoot) */
-            .print-only-answer-page tfoot {
-                display: table-footer-group !important;
-            }
-            .print-only-ans-footer-cell {
-                padding: 0 !important;
-                border: none !important;
-                height: 15mm !important; 
-                background-color: transparent !important;
-            }
-
-            /* 🌟 [아이패드 전용] 표의 행(Row) 및 텍스트 중간이 찢어지는 현상 완벽 방지 */
-            .ans-table tr { 
-                page-break-inside: avoid !important; 
-                break-inside: avoid !important; 
-                -webkit-column-break-inside: avoid !important; /* 아이패드(WebKit) 특효약 */
-            }
-            .ans-table td, .ans-table th {
-                page-break-inside: avoid !important;
-                break-inside: avoid !important;
-            }
+            /* 🌟 행(Row), 칸(td), 상세박스 중간 잘림 현상 방지 완벽 유지 */
+            .ans-table tr { page-break-inside: avoid !important; break-inside: avoid !important; -webkit-column-break-inside: avoid !important; }
+            .ans-table td, .ans-table th { page-break-inside: avoid !important; break-inside: avoid !important; }
+            .detail-box { page-break-inside: avoid !important; break-inside: avoid !important; -webkit-column-break-inside: avoid !important; }
         }
     </style>
 </head>
@@ -306,7 +296,7 @@
 
             if (answerTableRows !== "") {
                 const ansPage = document.createElement('div');
-                ansPage.className = 'a4-page print-only-answer-page'; 
+                ansPage.className = 'print-only-answer-page'; // 🌟 [수정] 문제지 스타일(.a4-page)과의 간섭을 완전히 끊기 위해 클래스 단독 적용
 
                 const tableWrapper = document.createElement('div');
                 tableWrapper.style.width = '100%';
@@ -315,9 +305,9 @@
                     <table class="ans-table">
                         <thead>
                             <tr class="web-hide">
-                                <td colspan="4" class="print-only-ans-title-cell">
-                                    <span class="title-text">[오늘부터 레벨업] : 생명과학1 오답노트(정답 및 해설)</span>
-                                </td>
+                                <th colspan="4" class="print-only-ans-title-cell">
+                                    <span class="title-text">[오늘부터 레벨업] : 생명과학1 오답노트(정답 및 해설)-테스트</span>
+                                </th>
                             </tr>
                             <tr>
                                 <th style="width: 8%;">구분</th>
@@ -329,13 +319,8 @@
                         <tbody>
                             ${answerTableRows}
                         </tbody>
-                        <tfoot class="web-hide">
-                            <tr>
-                                <td colspan="4" class="print-only-ans-footer-cell"></td>
-                            </tr>
-                        </tfoot>
                     </table>
-                `;
+                `; // 🌟 [수정] 아이패드 WebKit의 엔진 오작동을 유발하는 빈 tfoot 태그 구조 제거
                 ansPage.appendChild(tableWrapper);
                 container.appendChild(ansPage);
             }
