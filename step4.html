@@ -41,7 +41,7 @@
         
         .print-area { display: flex; flex-direction: column; align-items: center; gap: 12px; width: 100%; max-width: 600px; margin-top: 20px; }
         .action-btn-group { display: flex; justify-content: center; gap: 12px; width: 100%; }
-        .btn-secondary { background-color: #f1f3f5; color: #495057; border: 1px solid #dee2e6; border-radius: 8px; padding: 16px 20px; font-size: 16px; font-weight: 600; cursor: cursor; transition: 0.2s; }
+        .btn-secondary { background-color: #f1f3f5; color: #495057; border: 1px solid #dee2e6; border-radius: 8px; padding: 16px 20px; font-size: 16px; font-weight: 600; cursor: pointer; transition: 0.2s; }
         .btn-secondary:hover { background-color: #e2e6ea; }
         .btn-primary { background-color: #081c15; color: #ffffff; border: none; border-radius: 8px; padding: 16px 30px; font-size: 16px; font-weight: 600; cursor: pointer; flex: 1; }
         .print-guide-text { font-size: 13px; color: #888; text-align: center; margin-top: 5px; line-height: 1.5; }
@@ -65,32 +65,44 @@
         }
 
         /* =========================================
-           2. PDF 인쇄 화면 (맥북 & 아이패드 동시 최적화)
+           2. PDF 인쇄 화면 (89% 배율의 마법 적용)
            ========================================= */
         @media print {
             @page { size: A4; margin: 0 !important; }
             
-            body { background-color: #ffffff; margin: 0 !important; padding: 0 !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+            /* 🌟 [핵심 1] body의 flex 속성이 아이패드 표 찢어짐의 주범이었습니다! block으로 완벽 초기화 */
+            html, body { 
+                display: block !important; 
+                width: 100% !important; 
+                height: auto !important; 
+                background-color: #ffffff !important; 
+                margin: 0 !important; 
+                padding: 0 !important; 
+                -webkit-print-color-adjust: exact; 
+                print-color-adjust: exact; 
+            }
+
             .no-print, .web-main-title, .print-area { display: none !important; }
             
             #worksheet-container { display: block !important; width: 100% !important; margin: 0 !important; padding: 0 !important; }
 
-            /* 🌟 문제 페이지: mm 크기 고정 해제 -> 100%와 280mm를 사용해 아이패드 여백 충돌 및 빈페이지 완벽 방지 */
+            /* 🌟 [핵심 2] 89% 축소 힌트 적용! A4 크기의 약 90%인 190mm x 267mm로 아이패드 안전구역 설정 */
             .a4-page {
-                width: 100% !important; 
-                height: 280mm !important; 
-                padding: 20mm 15mm 15mm 15mm !important; 
+                display: flex !important; /* 문제 2개 배치를 위한 내부 flex 유지 */
+                flex-direction: column !important; 
+                width: 190mm !important; 
+                height: 267mm !important; 
+                margin: 0 auto !important; /* 종이 한가운데로 정렬 */
+                padding: 15mm 10mm 15mm 10mm !important; /* 패딩도 90% 비율에 맞게 최적화 */
                 box-sizing: border-box !important; 
                 page-break-inside: avoid !important; 
                 page-break-after: always !important; 
                 break-after: page !important;
-                display: flex !important; 
-                flex-direction: column !important; 
                 background-color: #ffffff !important;
                 overflow: hidden !important; 
             }
 
-            /* 🌟 맨 마지막 장이 쓸데없이 다음 빈 페이지를 밀어내지 않도록 방어 */
+            /* 맨 마지막 장이 쓸데없이 다음 빈 페이지를 밀어내지 않도록 강제 방어 */
             #worksheet-container > div:last-child {
                 page-break-after: auto !important;
                 break-after: auto !important;
@@ -102,9 +114,8 @@
             }
 
             .a4-grid {
-                display: grid !important; grid-template-columns: 1fr 1fr !important; gap: 16mm !important; 
+                display: grid !important; grid-template-columns: 1fr 1fr !important; gap: 12mm !important; 
                 width: 100% !important; flex: 1 !important; position: relative !important; padding-top: 4mm !important; 
-                box-sizing: border-box !important;
             }
 
             .a4-grid::after {
@@ -114,15 +125,16 @@
 
             .question-page { border: none !important; box-shadow: none !important; margin: 0 !important; padding: 0 !important; width: 100% !important; height: 100% !important; display: flex !important; flex-direction: column !important; }
             .spacer { display: flex !important; }
-            .q-image-placeholder { border: 1px solid #dddddd !important; padding: 8px !important; border-radius: 4px !important; max-height: 175mm !important; overflow: hidden !important; }
+            .q-image-placeholder { border: 1px solid #dddddd !important; padding: 8px !important; border-radius: 4px !important; max-height: 165mm !important; overflow: hidden !important; }
             .real-q-image { max-height: 100% !important; object-fit: contain !important; }
 
-            /* 🌟 정답표 전용 페이지: 역시 width 100%로 설정하여 가로 빈페이지 차단 */
+            /* 🌟 정답표 페이지도 90% 안전구역(190mm) 적용하여 가로/세로 빈페이지 차단 */
             .print-only-answer-page { 
                 display: block !important; 
-                width: 100% !important;
+                width: 190mm !important;
+                margin: 0 auto !important; /* 가운데 정렬 */
                 height: auto !important; 
-                padding: 0mm 15mm 0mm 15mm !important; 
+                padding: 0mm 10mm 0mm 10mm !important; 
                 box-sizing: border-box !important;
                 overflow: visible !important; 
                 page-break-inside: auto !important; 
@@ -137,12 +149,10 @@
 
             .print-only-answer-page tbody { display: table-row-group !important; }
 
-            /* 🌟 맥북에서 완벽했던 그 구조 복원: 타이틀 반복 보장 */
+            /* 🌟 맥북에서 완벽했던 그 구조 복원: 타이틀 반복을 위한 thead 설정 */
             .print-only-answer-page thead { display: table-header-group !important; }
-            .print-only-answer-page thead tr { page-break-inside: avoid !important; break-inside: avoid !important; }
-            
             .print-only-ans-title-cell {
-                padding: 20mm 0mm 8px 0mm !important; 
+                padding: 15mm 0mm 8px 0mm !important; 
                 border: none !important; text-align: left !important; background-color: #ffffff !important;
             }
             .print-only-ans-title-cell .title-text {
@@ -151,13 +161,13 @@
                 margin-bottom: 10px !important;
             }
 
-            /* 🌟 하단 여백: tfoot 활용 */
+            /* 🌟 하단 여백: tfoot 활용 (맥북 & 아이패드 동시 적용) */
             .print-only-answer-page tfoot { display: table-footer-group !important; }
             .print-only-ans-footer-cell {
                 padding: 0 !important; border: none !important; height: 15mm !important; background-color: transparent !important;
             }
 
-            /* 🌟 아이패드 표 찢어짐 완벽 방어 (엔진 오류가 사라졌으므로 정상 작동함) */
+            /* 🌟 표 찢어짐 완벽 방어 (Flex 간섭이 사라져 이제 100% 정상 작동합니다) */
             .ans-table tr, .ans-table td, .ans-table th { 
                 page-break-inside: avoid !important; 
                 break-inside: avoid !important; 
@@ -184,7 +194,7 @@
             <button class="btn-secondary" onclick="location.href='step3.html'">이전으로</button>
             <button class="btn-primary" onclick="window.print()">PDF 저장 및 인쇄하기</button>
         </div>
-        <div class="print-guide-text">인쇄 설정에서 <b>'배경 그래픽'을 체크</b>하고 인쇄 또는 저장하세요.<br>※ 인쇄 시에만 마지막 페이지에 상세 정답 해설표가 자동 첨부됩니다.</div>
+        <div class="print-guide-text">인쇄 설정에서 <b>'배경 그래픽'을 체크</b>하고 인쇄 또는 저장하세요.</div>
     </div>
 
     <script>
@@ -239,7 +249,7 @@
                     
                     const title = document.createElement('div');
                     title.className = 'print-only-title';
-                    title.innerText = '[오늘부터 레벨업] : 생명과학1 맞춤형 오답 클리닉';
+                    title.innerText = '[오늘부터 레벨업] : 생명과학1 오답노트';
                     page.appendChild(title);
                     
                     currentGrid = document.createElement('div');
@@ -315,6 +325,7 @@
                 const tableWrapper = document.createElement('div');
                 tableWrapper.style.width = '100%';
                 
+                /* 🌟 맥북에서 완벽하게 작동했던 thead(타이틀 복제)와 tfoot(하단 여백) 구조입니다. */
                 tableWrapper.innerHTML = `
                     <table class="ans-table">
                         <thead>
