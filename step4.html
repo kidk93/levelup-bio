@@ -9,7 +9,7 @@
 
     <style>
         /* =========================================
-           1. 웹 화면 기본 디자인 (수정 절대 안함)
+           1. 웹 화면 기본 디자인
            ========================================= */
         body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif; background-color: #f4f7f5; color: #1b4332; margin: 0; padding: 40px 10vw; display: flex; flex-direction: column; align-items: center; }
         .web-main-title { font-size: 28px; font-weight: 800; letter-spacing: -1px; margin: 0 0 30px 0; color: #081c15; border-bottom: 3px solid #1b4332; padding-bottom: 16px; text-align: center; width: 100%; max-width: 900px; }
@@ -49,94 +49,123 @@
 
         .spacer { display: none; }
 
+        /* 정답표 기본 구조 CSS */
+        .ans-table { width: 100%; border-collapse: collapse; margin-top: 20px; font-size: 12px; line-height: 1.5; word-break: keep-all; }
+        .ans-table th, .ans-table td { border: 1px solid #b7c4bd; padding: 12px 10px; text-align: center; vertical-align: middle; }
+        .ans-table th { background-color: #f4f7f5; color: #1b4332; font-weight: 700; font-size: 13px; }
+        .ans-highlight { font-weight: 800; color: #d35400; font-size: 16px; }
+        .detail-box { text-align: left; margin-bottom: 6px; }
+        .detail-title { font-weight: 700; color: #1b4332; margin-right: 4px; }
+
+        /* 웹 화면용 상단 빈 셀 숨김 처리 */
+        .web-hide { display: table-row; }
+
+        /* 웹 화면에서는 정답표 페이지 전체가 절대 보이지 않게 숨김 처리 */
+        @media screen {
+            .print-only-answer-page { display: none !important; }
+        }
+
         /* =========================================
-           2. PDF 인쇄 화면 (여백 최적화 및 구분선 밀착)
+           2. PDF 인쇄 화면 (아이패드 버그 완벽 수정 및 정답표 상단 반복 구현)
            ========================================= */
         @media print {
-            @page { 
-                size: A4; 
-                margin: 0 !important; 
-            }
+            @page { size: A4; margin: 0 !important; }
             
-            body { 
-                background-color: #ffffff; 
-                margin: 0 !important; 
-                padding: 0 !important; 
-                -webkit-print-color-adjust: exact; 
-                print-color-adjust: exact; 
-            }
-            
+            body { background-color: #ffffff; margin: 0 !important; padding: 0 !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
             .no-print, .web-main-title, .print-area { display: none !important; }
             
-            #worksheet-container {
-                display: block !important;
-                width: 100% !important;
-                margin: 0 !important;
-                padding: 0 !important;
-            }
+            #worksheet-container { display: block !important; width: 100% !important; margin: 0 !important; padding: 0 !important; }
 
             .a4-page {
-                width: 210mm !important;
-                height: 297mm !important;
+                width: 210mm !important; 
+                height: 296mm !important; /* 297mm에서 딱 1mm를 줄여 아이패드 엔진의 올림 오차 및 자동 축소 여백 버그를 원천 봉쇄합니다. */
                 padding: 20mm 15mm 15mm 15mm !important; 
-                box-sizing: border-box !important;
-                page-break-after: always !important;
+                box-sizing: border-box !important; 
+                page-break-inside: avoid !important; /* 페이지 내부에서 애매하게 끊기는 현상을 방지합니다. */
+                page-break-after: always !important; 
                 break-after: page !important;
-                display: flex !important;
-                flex-direction: column !important;
+                display: flex !important; 
+                flex-direction: column !important; 
                 background-color: #ffffff !important;
+                overflow: hidden !important; /* 미세하게 넘치는 데이터가 있더라도 다음 장을 생성하지 못하도록 강제 컷오프합니다. */
             }
             
             .print-only-title { 
-                display: block !important; 
-                font-size: 16pt; font-weight: 800; color: #000; 
-                border-bottom: 2px solid #000; 
-                padding-bottom: 8px; 
-                /* 🌟 마진을 0으로 만들어 중앙 분리선이 제목 선과 닿게 함 */
-                margin-bottom: 0 !important;
-                text-align: left;
+                display: block !important; font-size: 16pt; font-weight: 800; color: #000; 
+                border-bottom: 2px solid #000; padding-bottom: 8px; margin-bottom: 0 !important; text-align: left;
             }
 
             .a4-grid {
-                display: grid !important;
-                grid-template-columns: 1fr 1fr !important;
-                gap: 16mm !important; 
-                width: 100% !important;
-                flex: 1 !important;
-                position: relative !important; 
-                /* 🌟 제목선과 문항 사이 여백을 기존 8mm의 절반인 4mm로 축소 */
-                padding-top: 4mm !important; 
+                display: grid !important; grid-template-columns: 1fr 1fr !important; gap: 16mm !important; 
+                width: 100% !important; flex: 1 !important; position: relative !important; padding-top: 4mm !important; 
             }
 
             .a4-grid::after {
-                content: "" !important;
-                position: absolute !important;
-                /* 🌟 top:0으로 설정되어 a4-grid 맨 위(제목 구분선)부터 시작됨 */
-                top: 0 !important;
-                bottom: 0 !important;
-                left: 50% !important;
-                width: 0.5pt !important; 
-                background-color: #cccccc !important; 
-                transform: translateX(-50%) !important;
+                content: "" !important; position: absolute !important; top: 0 !important; bottom: 0 !important;
+                left: 50% !important; width: 0.5pt !important; background-color: #cccccc !important; transform: translateX(-50%) !important;
             }
 
-            .question-page { 
-                border: none !important; 
-                box-shadow: none !important; 
-                margin: 0 !important; 
-                padding: 0 !important; 
-                width: 100% !important;
-                height: 100% !important; 
-                display: flex !important; 
-                flex-direction: column !important;
-            }
-
+            .question-page { border: none !important; box-shadow: none !important; margin: 0 !important; padding: 0 !important; width: 100% !important; height: 100% !important; display: flex !important; flex-direction: column !important; }
             .spacer { display: flex !important; }
+            .q-image-placeholder { border: 1px solid #dddddd !important; padding: 8px !important; border-radius: 4px !important; }
 
-            .q-image-placeholder { 
-                border: 1px solid #dddddd !important; 
-                padding: 8px !important; 
-                border-radius: 4px !important;
+            /* 🌟 정답표 인쇄용 정밀 레이아웃 수정 */
+            .print-only-answer-page { 
+                display: block !important; 
+                width: 210mm !important;
+                height: auto !important; /* 다중 페이지 연장을 위해 세로 높이 잠금 해제 */
+                /* 🌟 [수정 포인트] tfoot이 하단 여백을 담당하므로 엉뚱한 이중 여백을 막기 위해 padding-bottom을 0으로 설정합니다. */
+                padding: 0mm 15mm 0mm 15mm !important; 
+                box-sizing: border-box !important;
+                overflow: visible !important; 
+                page-break-inside: auto !important; 
+                page-break-after: auto !important; 
+                break-after: auto !important;
+            }
+
+            /* 정답표 내의 테이블 구조 설정 */
+            .print-only-answer-page .ans-table {
+                margin-top: 0 !important; /* thead 여백 구조 조정을 위해 기본 마진 제거 */
+                width: 100% !important;
+            }
+
+            /* 정답표 다중 페이지 상단 여백 및 타이틀 자동 반복 처리 */
+            .print-only-answer-page thead {
+                display: table-header-group !important; /* 브라우저가 매 페이지마다 헤더를 강제 복제하도록 설정 */
+            }
+
+            /* 인쇄 시에만 활성화되는 thead 반복용 타이틀 셀 스타일 */
+            .print-only-ans-title-cell {
+                padding: 20mm 0mm 8px 0mm !important; /* 🌟 매 페이지 최상단 20mm 여백 보장 + 타이틀 패딩 */
+                border: none !important;
+                text-align: left !important;
+                background-color: #ffffff !important;
+            }
+
+            .print-only-ans-title-cell .title-text {
+                display: block !important;
+                font-size: 16pt !important;
+                font-weight: 800 !important;
+                color: #000 !important;
+                border-bottom: 2px solid #000 !important;
+                padding-bottom: 8px !important;
+            }
+
+            /* 🌟 [핵심 추가] 정답표 다중 페이지 하단 여백 자동 삽입 (tfoot 활용) */
+            .print-only-answer-page tfoot {
+                display: table-footer-group !important; /* 브라우저가 표가 쪼개질 때마다 하단에 이 공간을 삽입합니다. */
+            }
+            .print-only-ans-footer-cell {
+                padding: 0 !important;
+                border: none !important;
+                height: 15mm !important; /* 15mm의 투명한 보호 여백 공간 확보 */
+                background-color: transparent !important;
+            }
+
+            /* 🌟 표의 행(Row) 단위 글자가 중간에 찢어지는 현상 완벽 방지 */
+            .ans-table tr { 
+                page-break-inside: avoid !important; 
+                break-inside: avoid !important; 
             }
         }
     </style>
@@ -153,7 +182,7 @@
             <button class="btn-secondary" onclick="location.href='step3.html'">이전으로</button>
             <button class="btn-primary" onclick="window.print()">PDF 저장 및 인쇄하기</button>
         </div>
-        <div class="print-guide-text">인쇄 설정에서 <b>'배경 그래픽'을 체크</b>하고 인쇄 또는 저장하세요.</div>
+        <div class="print-guide-text">인쇄 설정에서 <b>'배경 그래픽'을 체크</b>하고 인쇄 또는 저장하세요.<br>※ 인쇄 시에만 마지막 페이지에 상세 정답 해설표가 자동 첨부됩니다.</div>
     </div>
 
     <script>
@@ -165,6 +194,18 @@
             const monthStr = month < 10 ? '0' + month : '' + month;
             const org = [6, 9, 11].includes(month) ? "평가원" : "교육청";
             return { ui: `${year}년 ${month}월 ${org}`, folder: `${year}년_${monthStr}월_${org}` };
+        }
+
+        function buildDetailHtml(intent, analysis, exp) {
+            let html = "";
+            if (intent && intent !== "nan") html += `<div class="detail-box"><span class="detail-title">[출제 의도]</span> ${intent}</div>`;
+            if (analysis && analysis !== "nan") html += `<div class="detail-box"><span class="detail-title">[문항 설명]</span> ${analysis}</div>`;
+            if (exp && exp !== "nan") html += `<div class="detail-box" style="margin-bottom:0;"><span class="detail-title">[정답 해설]</span> ${exp}</div>`;
+            
+            if (html === "") {
+                html = "<span style='color:#888;'>□ 스스로 핵심 개념 및 오답 이유를 메모해 보세요.</span>";
+            }
+            return html;
         }
 
         function loadWorksheet() {
@@ -187,6 +228,7 @@
 
             let itemsInCurrentPage = 0;
             let currentGrid = null;
+            let answerTableRows = "";
 
             function getOrCreateGrid() {
                 if (itemsInCurrentPage === 0 || itemsInCurrentPage >= 2) {
@@ -211,7 +253,7 @@
             selectedErrors.forEach(errorNum => {
                 const paddedNum = String(errorNum).padStart(2, '0');
                 let data = currentExamData[errorNum];
-                if (!data) data = { original: { ans: "미정" }, similars: [] };
+                if (!data) return;
 
                 if (itemsInCurrentPage === 1) {
                     const spacer = document.createElement("div");
@@ -227,6 +269,17 @@
                 getOrCreateGrid().appendChild(createQuestionPage("original", origInfo, origAns, origPath));
                 itemsInCurrentPage++;
 
+                const origDetails = buildDetailHtml(data.original.core_intent, data.original.data_analysis, data.original.explanation);
+                
+                answerTableRows += `
+                    <tr>
+                        <td style="font-weight:bold; color:#d35400;">원본</td>
+                        <td style="text-align:left;">${origInfo}</td>
+                        <td><span class="ans-highlight">${origAns}</span></td>
+                        <td style="text-align:left; vertical-align:top;">${origDetails}</td>
+                    </tr>
+                `;
+
                 if (data.similars) {
                     data.similars.forEach(sim => {
                         if (finalSelections.includes(sim.id)) {
@@ -237,10 +290,58 @@
                             
                             getOrCreateGrid().appendChild(createQuestionPage("similar", simInfo, simAns, simPath));
                             itemsInCurrentPage++;
+
+                            const simDetailsHtml = buildDetailHtml(sim.core_intent, sim.data_analysis, sim.explanation);
+
+                            answerTableRows += `
+                                <tr>
+                                    <td style="font-weight:bold; color:#1b4332;">유사</td>
+                                    <td style="text-align:left;">${simInfo}</td>
+                                    <td><span class="ans-highlight">${simAns}</span></td>
+                                    <td style="text-align:left; vertical-align:top;">${simDetailsHtml}</td>
+                                </tr>
+                            `;
                         }
                     });
                 }
             });
+
+            if (answerTableRows !== "") {
+                const ansPage = document.createElement('div');
+                ansPage.className = 'a4-page print-only-answer-page'; 
+
+                const tableWrapper = document.createElement('div');
+                tableWrapper.style.width = '100%';
+                
+                /* 🌟 [핵심 변경] 표의 꼬리말(tfoot) 영역을 추가하여 매 페이지 끝마다 15mm 여백이 강제로 생기도록 구성했습니다. */
+                tableWrapper.innerHTML = `
+                    <table class="ans-table">
+                        <thead>
+                            <tr class="web-hide">
+                                <td colspan="4" class="print-only-ans-title-cell">
+                                    <span class="title-text">[오늘부터 레벨업] : 생명과학1 오답노트(정답 및 해설)</span>
+                                </td>
+                            </tr>
+                            <tr>
+                                <th style="width: 8%;">구분</th>
+                                <th style="width: 22%;">문항 정보</th>
+                                <th style="width: 10%;">정답</th>
+                                <th style="width: 60%;">상세 해설 및 출제 분석</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            ${answerTableRows}
+                        </tbody>
+                        <tfoot class="web-hide">
+                            <tr>
+                                <td colspan="4" class="print-only-ans-footer-cell"></td>
+                            </tr>
+                        </tfoot>
+                    </table>
+                `;
+                ansPage.appendChild(tableWrapper);
+                container.appendChild(ansPage);
+            }
         }
 
         function createQuestionPage(type, info, ansText, imagePath) {

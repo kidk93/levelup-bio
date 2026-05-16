@@ -79,6 +79,7 @@
         .action-btn-group {
             display: flex;
             justify-content: center;
+            align-items: flex-start; /* 버튼들 위쪽 정렬 유지 */
             gap: 12px;
             width: 100%;
             max-width: 400px; 
@@ -101,6 +102,14 @@
             background-color: #e2e6ea;
         }
 
+        /* 🌟 추천받기 버튼과 체크박스를 묶어주는 래퍼 클래스 추가 */
+        .primary-btn-wrapper {
+            display: flex;
+            flex-direction: column;
+            align-items: center; /* 래퍼 내부에서 중앙 정렬 */
+            flex: 1; /* 기존 버튼이 차지하던 공간을 래퍼가 차지함 */
+        }
+
         .btn-primary {
             background-color: #081c15;
             color: #ffffff;
@@ -110,7 +119,7 @@
             font-size: 18px;
             font-weight: 600;
             cursor: pointer;
-            flex: 1; 
+            width: 100%; /* 래퍼 영역 안에서 100% 꽉 채우기 */
             transition: all 0.2s ease;
         }
 
@@ -119,7 +128,20 @@
             box-shadow: 0 4px 12px rgba(8, 28, 21, 0.2);
         }
 
-        /* 🌟 커스텀 모달(팝업) CSS 추가 */
+        /* 🌟 체크박스 스타일 수정 (위치 기준 변경) */
+        .option-container {
+            display: none;
+            align-items: center;
+            gap: 8px;
+            cursor: pointer;
+            user-select: none;
+            margin-top: 8px; 
+            justify-content: center;
+        }
+        .option-container input { cursor: pointer; width: 18px; height: 18px; accent-color: #1b4332; }
+        .option-container label { font-size: 14px; font-weight: 600; color: #495057; cursor: pointer; letter-spacing: -0.3px; }
+
+        /* 커스텀 모달(팝업) CSS */
         .custom-modal-overlay {
             display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
             background-color: rgba(0, 0, 0, 0.4); z-index: 1000;
@@ -150,7 +172,14 @@
 
     <div class="action-btn-group">
         <button class="btn-secondary" onclick="location.href='index.html'">처음으로</button>
-        <button class="btn-primary" onclick="goToStep3()">유사 문항 추천받기 →</button>
+        
+        <div class="primary-btn-wrapper">
+            <button class="btn-primary" onclick="goToStep3()">유사 문항 추천받기 →</button>
+            <div class="option-container" id="all-view-option">
+                <input type="checkbox" id="all-similars-chk">
+                <label for="all-similars-chk">유사 문항 전체 보기 (최근 순 정렬)</label>
+            </div>
+        </div>
     </div>
 
     <div id="custom-modal" class="custom-modal-overlay">
@@ -162,7 +191,6 @@
     </div>
 
     <script>
-        // 🌟 커스텀 팝업창을 띄우고 닫는 함수
         function showCustomAlert(message) {
             document.getElementById("custom-modal-message").innerHTML = message;
             document.getElementById("custom-modal").style.display = "flex";
@@ -196,17 +224,20 @@
                     selectedNumbers.push(i);
                     btn.classList.add("selected");
                 }
+                document.getElementById("all-view-option").style.display = selectedNumbers.length > 0 ? "flex" : "none";
             };
             grid.appendChild(btn);
         }
 
         function goToStep3() {
             if (selectedNumbers.length === 0) {
-                // 🌟 기본 alert 대신 커스텀 팝업 호출 (메시지 변경)
                 showCustomAlert("틀린 문항을 하나 이상 선택해 주세요!");
                 return;
             }
             
+            const isAllView = document.getElementById("all-similars-chk").checked;
+            localStorage.setItem("viewMode", isAllView ? "all_sorted" : "recommendation");
+
             selectedNumbers.sort((a, b) => a - b);
             localStorage.setItem("selectedErrors", JSON.stringify(selectedNumbers));
             
@@ -215,7 +246,6 @@
     </script>
 
 <script>
-    // 🌟 백그라운드에서 학습 기록 미리 가져오기 (step3 딜레이 제거용)
     window.addEventListener('DOMContentLoaded', () => {
         const nickname = localStorage.getItem("userNickname");
         if (nickname) {
@@ -224,7 +254,6 @@
                 .then(res => res.json())
                 .then(data => {
                     if(data.success && data.data) {
-                        // 가져온 데이터를 브라우저 임시 저장소에 몰래 저장
                         localStorage.setItem("cachedHistory", JSON.stringify(data.data));
                     }
                 })
